@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/yutopp/go-rtmp"
-	"github.com/yutopp/go-rtmp/message"
+	"github.com/scottdavis/go-rtmp"
+	"github.com/scottdavis/go-rtmp/message"
 )
 
 // EnhancedHandler demonstrates the new OnError callback and stream context features

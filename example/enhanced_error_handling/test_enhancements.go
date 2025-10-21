@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/yutopp/go-rtmp"
-	"github.com/yutopp/go-rtmp/message"
+	"github.com/scottdavis/go-rtmp"
+	"github.com/scottdavis/go-rtmp/message"
 )
 
 // TestEnhancedHandler tests the new OnError callback and stream context features

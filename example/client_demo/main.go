@@ -3,8 +3,8 @@ package main
 import (
 	log "github.com/sirupsen/logrus"
 
-	"github.com/yutopp/go-rtmp"
-	rtmpmsg "github.com/yutopp/go-rtmp/message"
+	"github.com/scottdavis/go-rtmp"
+	rtmpmsg "github.com/scottdavis/go-rtmp/message"
 )
 
 const (

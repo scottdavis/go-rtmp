@@ -9,7 +9,7 @@ import (
 	"syscall"
 
 	"github.com/sirupsen/logrus"
-	"github.com/yutopp/go-rtmp"
+	"github.com/scottdavis/go-rtmp"
 )
 
 func main() {

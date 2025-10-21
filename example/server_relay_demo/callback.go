@@ -5,8 +5,8 @@ import (
 	"context"
 
 	flvtag "github.com/yutopp/go-flv/tag"
-	"github.com/yutopp/go-rtmp"
-	rtmpmsg "github.com/yutopp/go-rtmp/message"
+	"github.com/scottdavis/go-rtmp"
+	rtmpmsg "github.com/scottdavis/go-rtmp/message"
 )
 
 func onEventCallback(conn *rtmp.Conn, streamID uint32) func(flv *flvtag.FlvTag) error {
