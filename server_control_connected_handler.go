@@ -8,6 +8,10 @@
 package rtmp
 
 import (
+	"fmt"
+	"net"
+
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 
 	"github.com/scottdavis/go-rtmp/internal"
@@ -66,7 +70,7 @@ func (h *serverControlConnectedHandler) onCommand(
 		}()
 
 		// Create a basic stream context for connection-level operations
-		ctx := &StreamContext{StreamID: h.sh.stream.streamID}
+		ctx := h.createStreamContext()
 		if err := h.sh.stream.userHandler().OnCreateStream(ctx, timestamp, cmd); err != nil {
 			return err
 		}
@@ -116,7 +120,7 @@ func (h *serverControlConnectedHandler) onCommand(
 	case *message.NetConnectionReleaseStream:
 		l.Infof("Release stream...: StreamName = %s", cmd.StreamName)
 
-		ctx := &StreamContext{StreamID: h.sh.stream.streamID}
+		ctx := h.createStreamContext()
 		if err := h.sh.stream.userHandler().OnReleaseStream(ctx, timestamp, cmd); err != nil {
 			return err
 		}
@@ -128,7 +132,7 @@ func (h *serverControlConnectedHandler) onCommand(
 	case *message.NetStreamFCPublish:
 		l.Infof("FCPublish stream...: StreamName = %s", cmd.StreamName)
 
-		ctx := &StreamContext{StreamID: h.sh.stream.streamID}
+		ctx := h.createStreamContext()
 		if err := h.sh.stream.userHandler().OnFCPublish(ctx, timestamp, cmd); err != nil {
 			return err
 		}
@@ -140,7 +144,7 @@ func (h *serverControlConnectedHandler) onCommand(
 	case *message.NetStreamFCUnpublish:
 		l.Infof("FCUnpublish stream...: StreamName = %s", cmd.StreamName)
 
-		ctx := &StreamContext{StreamID: h.sh.stream.streamID}
+		ctx := h.createStreamContext()
 		if err := h.sh.stream.userHandler().OnFCUnpublish(ctx, timestamp, cmd); err != nil {
 			return err
 		}
@@ -164,4 +168,28 @@ func (h *serverControlConnectedHandler) newCreateStreamSuccessResult(
 
 func (h *serverControlConnectedHandler) newCreateStreamErrorResult() *message.NetConnectionCreateStreamResult {
 	return nil
+}
+
+// createStreamContext creates a StreamContext with connection information
+func (h *serverControlConnectedHandler) createStreamContext() *StreamContext {
+	ctx := &StreamContext{
+		StreamID: h.sh.stream.streamID,
+	}
+
+	// Try to get connection information if available
+	if h.sh.stream.conn != nil && h.sh.stream.conn.rwc != nil {
+		// Try different ways to get the remote address
+		if netConn, ok := h.sh.stream.conn.rwc.(interface{ RemoteAddr() string }); ok {
+			ctx.RemoteAddr = netConn.RemoteAddr()
+		} else if netConn, ok := h.sh.stream.conn.rwc.(interface{ RemoteAddr() net.Addr }); ok {
+			ctx.RemoteAddr = netConn.RemoteAddr().String()
+		}
+
+		// Create a unique connection ID using UUID for guaranteed uniqueness
+		// Format: "UUID-STREAMID" (e.g., "550e8400-e29b-41d4-a716-446655440000-1")
+		connectionUUID := uuid.New().String()
+		ctx.ConnectionID = fmt.Sprintf("%s-%d", connectionUUID, h.sh.stream.streamID)
+	}
+
+	return ctx
 }

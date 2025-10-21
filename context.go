@@ -12,8 +12,11 @@ type StreamContext struct {
 	StreamName     string
 	PublishingName string
 	App            string
+	// Connection-level context for unique identification
+	ConnectionID string // Unique identifier for the connection
+	RemoteAddr   string // Remote address of the connection
 	// Metadata storage for custom data
-	Metadata       map[string]interface{}
+	Metadata map[string]interface{}
 }
 
 // GetMetadata retrieves a metadata value by key

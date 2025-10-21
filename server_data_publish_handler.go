@@ -8,6 +8,10 @@
 package rtmp
 
 import (
+	"fmt"
+	"net"
+
+	"github.com/google/uuid"
 	"github.com/scottdavis/go-rtmp/internal"
 	"github.com/scottdavis/go-rtmp/message"
 )
@@ -29,16 +33,40 @@ func (h *serverDataPublishHandler) onMessage(
 ) error {
 	switch msg := msg.(type) {
 	case *message.AudioMessage:
-		ctx := &StreamContext{StreamID: h.sh.stream.streamID}
+		ctx := h.createStreamContext()
 		return h.sh.stream.userHandler().OnAudio(ctx, timestamp, msg.Payload)
 
 	case *message.VideoMessage:
-		ctx := &StreamContext{StreamID: h.sh.stream.streamID}
+		ctx := h.createStreamContext()
 		return h.sh.stream.userHandler().OnVideo(ctx, timestamp, msg.Payload)
 
 	default:
 		return internal.ErrPassThroughMsg
 	}
+}
+
+// createStreamContext creates a StreamContext with connection information
+func (h *serverDataPublishHandler) createStreamContext() *StreamContext {
+	ctx := &StreamContext{
+		StreamID: h.sh.stream.streamID,
+	}
+
+	// Try to get connection information if available
+	if h.sh.stream.conn != nil && h.sh.stream.conn.rwc != nil {
+		// Try different ways to get the remote address
+		if netConn, ok := h.sh.stream.conn.rwc.(interface{ RemoteAddr() string }); ok {
+			ctx.RemoteAddr = netConn.RemoteAddr()
+		} else if netConn, ok := h.sh.stream.conn.rwc.(interface{ RemoteAddr() net.Addr }); ok {
+			ctx.RemoteAddr = netConn.RemoteAddr().String()
+		}
+
+		// Create a unique connection ID using UUID for guaranteed uniqueness
+		// Format: "UUID-STREAMID" (e.g., "550e8400-e29b-41d4-a716-446655440000-1")
+		connectionUUID := uuid.New().String()
+		ctx.ConnectionID = fmt.Sprintf("%s-%d", connectionUUID, h.sh.stream.streamID)
+	}
+
+	return ctx
 }
 
 func (h *serverDataPublishHandler) onData(
@@ -49,7 +77,7 @@ func (h *serverDataPublishHandler) onData(
 ) error {
 	switch data := body.(type) {
 	case *message.NetStreamSetDataFrame:
-		ctx := &StreamContext{StreamID: h.sh.stream.streamID}
+		ctx := h.createStreamContext()
 		return h.sh.stream.userHandler().OnSetDataFrame(ctx, timestamp, data)
 
 	default:
