@@ -8,5 +8,27 @@
 package rtmp
 
 type StreamContext struct {
-	StreamID uint32
+	StreamID       uint32
+	StreamName     string
+	PublishingName string
+	App            string
+	// Metadata storage for custom data
+	Metadata       map[string]interface{}
+}
+
+// GetMetadata retrieves a metadata value by key
+func (ctx *StreamContext) GetMetadata(key string) (interface{}, bool) {
+	if ctx.Metadata == nil {
+		return nil, false
+	}
+	value, exists := ctx.Metadata[key]
+	return value, exists
+}
+
+// SetMetadata sets a metadata value by key
+func (ctx *StreamContext) SetMetadata(key string, value interface{}) {
+	if ctx.Metadata == nil {
+		ctx.Metadata = make(map[string]interface{})
+	}
+	ctx.Metadata[key] = value
 }

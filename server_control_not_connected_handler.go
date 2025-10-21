@@ -64,7 +64,9 @@ func (h *serverControlNotConnectedHandler) onCommand(
 			}
 		}()
 
-		if err := h.sh.stream.userHandler().OnConnect(timestamp, cmd); err != nil {
+		// Create a basic stream context for connection-level operations
+		ctx := &StreamContext{StreamID: h.sh.stream.streamID}
+		if err := h.sh.stream.userHandler().OnConnect(ctx, timestamp, cmd); err != nil {
 			return err
 		}
 

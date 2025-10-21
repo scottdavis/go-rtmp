@@ -446,11 +446,20 @@ func (sched *chunkStreamerWriterSched) Sched(writer *ChunkStreamWriter) error {
 func (sched *chunkStreamerWriterSched) Run() (err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			errTmp, ok := r.(error)
-			if !ok {
-				errTmp = errors.Errorf("Panic: %+v", r)
+			// ENHANCED: Better panic recovery with detailed logging
+			var errTmp error
+			if panicErr, ok := r.(error); ok {
+				errTmp = errors.WithStack(panicErr)
+			} else {
+				errTmp = errors.Errorf("Panic in chunk streamer writer: %+v", r)
 			}
-			err = errors.WithStack(errTmp)
+			
+			// Log the panic for debugging
+			if sched.streamer.logger != nil {
+				sched.streamer.logger.Errorf("PANIC RECOVERED in chunk streamer writer: %+v", errTmp)
+			}
+			
+			err = errTmp
 		}
 	}()
 

@@ -21,19 +21,19 @@ type DefaultHandler struct {
 func (h *DefaultHandler) OnServe(conn *Conn) {
 }
 
-func (h *DefaultHandler) OnConnect(timestamp uint32, cmd *message.NetConnectionConnect) error {
+func (h *DefaultHandler) OnConnect(ctx *StreamContext, timestamp uint32, cmd *message.NetConnectionConnect) error {
 	return nil
 }
 
-func (h *DefaultHandler) OnCreateStream(timestamp uint32, cmd *message.NetConnectionCreateStream) error {
+func (h *DefaultHandler) OnCreateStream(ctx *StreamContext, timestamp uint32, cmd *message.NetConnectionCreateStream) error {
 	return nil
 }
 
-func (h *DefaultHandler) OnReleaseStream(timestamp uint32, cmd *message.NetConnectionReleaseStream) error {
+func (h *DefaultHandler) OnReleaseStream(ctx *StreamContext, timestamp uint32, cmd *message.NetConnectionReleaseStream) error {
 	return nil
 }
 
-func (h *DefaultHandler) OnDeleteStream(timestamp uint32, cmd *message.NetStreamDeleteStream) error {
+func (h *DefaultHandler) OnDeleteStream(ctx *StreamContext, timestamp uint32, cmd *message.NetStreamDeleteStream) error {
 	return nil
 }
 
@@ -45,36 +45,41 @@ func (h *DefaultHandler) OnPlay(_ *StreamContext, timestamp uint32, cmd *message
 	return nil
 }
 
-func (h *DefaultHandler) OnFCPublish(timestamp uint32, cmd *message.NetStreamFCPublish) error {
+func (h *DefaultHandler) OnFCPublish(ctx *StreamContext, timestamp uint32, cmd *message.NetStreamFCPublish) error {
 	return nil
 }
 
-func (h *DefaultHandler) OnFCUnpublish(timestamp uint32, cmd *message.NetStreamFCUnpublish) error {
+func (h *DefaultHandler) OnFCUnpublish(ctx *StreamContext, timestamp uint32, cmd *message.NetStreamFCUnpublish) error {
 	return nil
 }
 
-func (h *DefaultHandler) OnSetDataFrame(timestamp uint32, data *message.NetStreamSetDataFrame) error {
+func (h *DefaultHandler) OnSetDataFrame(ctx *StreamContext, timestamp uint32, data *message.NetStreamSetDataFrame) error {
 	return nil
 }
 
-func (h *DefaultHandler) OnAudio(timestamp uint32, payload io.Reader) error {
+func (h *DefaultHandler) OnAudio(_ *StreamContext, timestamp uint32, payload io.Reader) error {
 	return nil
 }
 
-func (h *DefaultHandler) OnVideo(timestamp uint32, payload io.Reader) error {
+func (h *DefaultHandler) OnVideo(_ *StreamContext, timestamp uint32, payload io.Reader) error {
 	return nil
 }
 
-func (h *DefaultHandler) OnUnknownMessage(timestamp uint32, msg message.Message) error {
+func (h *DefaultHandler) OnUnknownMessage(ctx *StreamContext, timestamp uint32, msg message.Message) error {
 	return nil
 }
 
-func (h *DefaultHandler) OnUnknownCommandMessage(timestamp uint32, cmd *message.CommandMessage) error {
+func (h *DefaultHandler) OnUnknownCommandMessage(ctx *StreamContext, timestamp uint32, cmd *message.CommandMessage) error {
 	return nil
 }
 
-func (h *DefaultHandler) OnUnknownDataMessage(timestamp uint32, data *message.DataMessage) error {
+func (h *DefaultHandler) OnUnknownDataMessage(ctx *StreamContext, timestamp uint32, data *message.DataMessage) error {
 	return nil
+}
+
+func (h *DefaultHandler) OnError(_ *StreamContext, err error) error {
+	// Default behavior: just return the error (let it propagate)
+	return err
 }
 
 func (h *DefaultHandler) OnClose() {

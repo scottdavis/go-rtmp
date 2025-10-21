@@ -30,7 +30,7 @@ func (h *Handler) OnServe(conn *rtmp.Conn) {
 	h.conn = conn
 }
 
-func (h *Handler) OnConnect(timestamp uint32, cmd *rtmpmsg.NetConnectionConnect) error {
+func (h *Handler) OnConnect(ctx *rtmp.StreamContext, timestamp uint32, cmd *rtmpmsg.NetConnectionConnect) error {
 	log.Printf("OnConnect: %#v", cmd)
 
 	// TODO: check app name to distinguish stream names per apps
@@ -39,7 +39,7 @@ func (h *Handler) OnConnect(timestamp uint32, cmd *rtmpmsg.NetConnectionConnect)
 	return nil
 }
 
-func (h *Handler) OnCreateStream(timestamp uint32, cmd *rtmpmsg.NetConnectionCreateStream) error {
+func (h *Handler) OnCreateStream(ctx *rtmp.StreamContext, timestamp uint32, cmd *rtmpmsg.NetConnectionCreateStream) error {
 	log.Printf("OnCreateStream: %#v", cmd)
 	return nil
 }
@@ -86,7 +86,7 @@ func (h *Handler) OnPlay(ctx *rtmp.StreamContext, timestamp uint32, cmd *rtmpmsg
 	return nil
 }
 
-func (h *Handler) OnSetDataFrame(timestamp uint32, data *rtmpmsg.NetStreamSetDataFrame) error {
+func (h *Handler) OnSetDataFrame(ctx *rtmp.StreamContext, timestamp uint32, data *rtmpmsg.NetStreamSetDataFrame) error {
 	r := bytes.NewReader(data.Payload)
 
 	var script flvtag.ScriptData
@@ -106,7 +106,7 @@ func (h *Handler) OnSetDataFrame(timestamp uint32, data *rtmpmsg.NetStreamSetDat
 	return nil
 }
 
-func (h *Handler) OnAudio(timestamp uint32, payload io.Reader) error {
+func (h *Handler) OnAudio(ctx *rtmp.StreamContext, timestamp uint32, payload io.Reader) error {
 	var audio flvtag.AudioData
 	if err := flvtag.DecodeAudioData(payload, &audio); err != nil {
 		return err
@@ -127,7 +127,7 @@ func (h *Handler) OnAudio(timestamp uint32, payload io.Reader) error {
 	return nil
 }
 
-func (h *Handler) OnVideo(timestamp uint32, payload io.Reader) error {
+func (h *Handler) OnVideo(ctx *rtmp.StreamContext, timestamp uint32, payload io.Reader) error {
 	var video flvtag.VideoData
 	if err := flvtag.DecodeVideoData(payload, &video); err != nil {
 		return err
@@ -147,6 +147,12 @@ func (h *Handler) OnVideo(timestamp uint32, payload io.Reader) error {
 	})
 
 	return nil
+}
+
+func (h *Handler) OnError(ctx *rtmp.StreamContext, err error) error {
+	log.Printf("OnError: %+v", err)
+	// Default behavior: let the error propagate
+	return err
 }
 
 func (h *Handler) OnClose() {

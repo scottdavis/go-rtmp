@@ -65,7 +65,9 @@ func (h *serverControlConnectedHandler) onCommand(
 			}
 		}()
 
-		if err := h.sh.stream.userHandler().OnCreateStream(timestamp, cmd); err != nil {
+		// Create a basic stream context for connection-level operations
+		ctx := &StreamContext{StreamID: h.sh.stream.streamID}
+		if err := h.sh.stream.userHandler().OnCreateStream(ctx, timestamp, cmd); err != nil {
 			return err
 		}
 
@@ -96,7 +98,8 @@ func (h *serverControlConnectedHandler) onCommand(
 	case *message.NetStreamDeleteStream:
 		l.Infof("Stream deleting...: TargetStreamID = %d", cmd.StreamID)
 
-		if err := h.sh.stream.userHandler().OnDeleteStream(timestamp, cmd); err != nil {
+		ctx := &StreamContext{StreamID: cmd.StreamID}
+		if err := h.sh.stream.userHandler().OnDeleteStream(ctx, timestamp, cmd); err != nil {
 			return err
 		}
 
@@ -113,7 +116,8 @@ func (h *serverControlConnectedHandler) onCommand(
 	case *message.NetConnectionReleaseStream:
 		l.Infof("Release stream...: StreamName = %s", cmd.StreamName)
 
-		if err := h.sh.stream.userHandler().OnReleaseStream(timestamp, cmd); err != nil {
+		ctx := &StreamContext{StreamID: h.sh.stream.streamID}
+		if err := h.sh.stream.userHandler().OnReleaseStream(ctx, timestamp, cmd); err != nil {
 			return err
 		}
 
@@ -124,7 +128,8 @@ func (h *serverControlConnectedHandler) onCommand(
 	case *message.NetStreamFCPublish:
 		l.Infof("FCPublish stream...: StreamName = %s", cmd.StreamName)
 
-		if err := h.sh.stream.userHandler().OnFCPublish(timestamp, cmd); err != nil {
+		ctx := &StreamContext{StreamID: h.sh.stream.streamID}
+		if err := h.sh.stream.userHandler().OnFCPublish(ctx, timestamp, cmd); err != nil {
 			return err
 		}
 
@@ -135,7 +140,8 @@ func (h *serverControlConnectedHandler) onCommand(
 	case *message.NetStreamFCUnpublish:
 		l.Infof("FCUnpublish stream...: StreamName = %s", cmd.StreamName)
 
-		if err := h.sh.stream.userHandler().OnFCUnpublish(timestamp, cmd); err != nil {
+		ctx := &StreamContext{StreamID: h.sh.stream.streamID}
+		if err := h.sh.stream.userHandler().OnFCUnpublish(ctx, timestamp, cmd); err != nil {
 			return err
 		}
 

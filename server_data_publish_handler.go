@@ -29,10 +29,12 @@ func (h *serverDataPublishHandler) onMessage(
 ) error {
 	switch msg := msg.(type) {
 	case *message.AudioMessage:
-		return h.sh.stream.userHandler().OnAudio(timestamp, msg.Payload)
+		ctx := &StreamContext{StreamID: h.sh.stream.streamID}
+		return h.sh.stream.userHandler().OnAudio(ctx, timestamp, msg.Payload)
 
 	case *message.VideoMessage:
-		return h.sh.stream.userHandler().OnVideo(timestamp, msg.Payload)
+		ctx := &StreamContext{StreamID: h.sh.stream.streamID}
+		return h.sh.stream.userHandler().OnVideo(ctx, timestamp, msg.Payload)
 
 	default:
 		return internal.ErrPassThroughMsg
@@ -47,7 +49,8 @@ func (h *serverDataPublishHandler) onData(
 ) error {
 	switch data := body.(type) {
 	case *message.NetStreamSetDataFrame:
-		return h.sh.stream.userHandler().OnSetDataFrame(timestamp, data)
+		ctx := &StreamContext{StreamID: h.sh.stream.streamID}
+		return h.sh.stream.userHandler().OnSetDataFrame(ctx, timestamp, data)
 
 	default:
 		return internal.ErrPassThroughMsg

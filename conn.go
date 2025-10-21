@@ -144,11 +144,29 @@ func (c *Conn) Write(ctx context.Context, chunkStreamID int, timestamp uint32, c
 func (c *Conn) handleMessageLoop() (err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			errTmp, ok := r.(error)
-			if !ok {
-				errTmp = errors.Errorf("Panic: %+v", r)
+			// ENHANCED: Better panic recovery with stack traces and logging
+			var errTmp error
+			if panicErr, ok := r.(error); ok {
+				errTmp = errors.WithStack(panicErr)
+			} else {
+				errTmp = errors.Errorf("Panic in message loop: %+v", r)
 			}
-			err = errors.WithStack(errTmp)
+			
+			// Log the panic with full stack trace for debugging
+			if c.logger != nil {
+				c.logger.Errorf("PANIC RECOVERED in handleMessageLoop: %+v", errTmp)
+			}
+			
+			// ENHANCED: Use OnError callback for panic recovery
+			if c.handler != nil {
+				if handlerErr := c.handler.OnError(nil, errTmp); handlerErr != nil {
+					// Handler decided to override the panic error
+					err = handlerErr
+					return
+				}
+			}
+			
+			err = errTmp
 		}
 	}()
 
@@ -199,8 +217,24 @@ func (c *Conn) handleMessage(chunkStreamID int, timestamp uint32, cmsg *ChunkMes
 			// Ignore unknown messsage body
 			c.logger.Warnf("Ignored unknown message body: Err = %+v", err)
 			return nil
+		default:
+			// ENHANCED: Use OnError callback for better error handling
+			streamCtx := &StreamContext{StreamID: cmsg.StreamID}
+			if handlerErr := c.handler.OnError(streamCtx, err); handlerErr != nil {
+				// Handler decided to override the error
+				if c.logger != nil {
+					c.logger.Errorf("Handler OnError returned: %+v (original: %+v)", handlerErr, err)
+				}
+				return handlerErr
+			}
+			
+			// ENHANCED: Log all errors with more context for debugging
+			if c.logger != nil {
+				c.logger.Errorf("Error handling message: StreamID=%d, ChunkStreamID=%d, Timestamp=%d, MessageType=%T, Error=%+v", 
+					cmsg.StreamID, chunkStreamID, timestamp, cmsg.Message, err)
+			}
+			return err
 		}
-		return err
 	}
 
 	return nil

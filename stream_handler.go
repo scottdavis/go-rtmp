@@ -91,7 +91,8 @@ func (h *streamHandler) Handle(chunkStreamID int, timestamp uint32, msg message.
 	default:
 		err := h.handler.onMessage(chunkStreamID, timestamp, msg)
 		if err == internal.ErrPassThroughMsg {
-			return h.stream.userHandler().OnUnknownMessage(timestamp, msg)
+			ctx := &StreamContext{StreamID: h.stream.streamID}
+			return h.stream.userHandler().OnUnknownMessage(ctx, timestamp, msg)
 		}
 		return err
 	}
@@ -160,7 +161,8 @@ func (h *streamHandler) handleData(
 
 	err := h.handler.onData(chunkStreamID, timestamp, dataMsg, value)
 	if err == internal.ErrPassThroughMsg {
-		return h.stream.userHandler().OnUnknownDataMessage(timestamp, dataMsg)
+		ctx := &StreamContext{StreamID: h.stream.streamID}
+		return h.stream.userHandler().OnUnknownDataMessage(ctx, timestamp, dataMsg)
 	}
 	return err
 }
@@ -200,7 +202,8 @@ func (h *streamHandler) handleCommand(
 
 	err := h.handler.onCommand(chunkStreamID, timestamp, cmdMsg, value)
 	if err == internal.ErrPassThroughMsg {
-		return h.stream.userHandler().OnUnknownCommandMessage(timestamp, cmdMsg)
+		ctx := &StreamContext{StreamID: h.stream.streamID}
+		return h.stream.userHandler().OnUnknownCommandMessage(ctx, timestamp, cmdMsg)
 	}
 
 	return err

@@ -44,7 +44,7 @@ type serverCanRejectConnectHandler struct {
 	DefaultHandler
 }
 
-func (h *serverCanRejectConnectHandler) OnConnect(_ uint32, _ *message.NetConnectionConnect) error {
+func (h *serverCanRejectConnectHandler) OnConnect(_ *StreamContext, _ uint32, _ *message.NetConnectionConnect) error {
 	return fmt.Errorf("Reject")
 }
 

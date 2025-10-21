@@ -15,19 +15,21 @@ import (
 
 type Handler interface {
 	OnServe(conn *Conn)
-	OnConnect(timestamp uint32, cmd *message.NetConnectionConnect) error
-	OnCreateStream(timestamp uint32, cmd *message.NetConnectionCreateStream) error
-	OnReleaseStream(timestamp uint32, cmd *message.NetConnectionReleaseStream) error
-	OnDeleteStream(timestamp uint32, cmd *message.NetStreamDeleteStream) error
+	OnConnect(ctx *StreamContext, timestamp uint32, cmd *message.NetConnectionConnect) error
+	OnCreateStream(ctx *StreamContext, timestamp uint32, cmd *message.NetConnectionCreateStream) error
+	OnReleaseStream(ctx *StreamContext, timestamp uint32, cmd *message.NetConnectionReleaseStream) error
+	OnDeleteStream(ctx *StreamContext, timestamp uint32, cmd *message.NetStreamDeleteStream) error
 	OnPublish(ctx *StreamContext, timestamp uint32, cmd *message.NetStreamPublish) error
 	OnPlay(ctx *StreamContext, timestamp uint32, cmd *message.NetStreamPlay) error
-	OnFCPublish(timestamp uint32, cmd *message.NetStreamFCPublish) error
-	OnFCUnpublish(timestamp uint32, cmd *message.NetStreamFCUnpublish) error
-	OnSetDataFrame(timestamp uint32, data *message.NetStreamSetDataFrame) error
-	OnAudio(timestamp uint32, payload io.Reader) error
-	OnVideo(timestamp uint32, payload io.Reader) error
-	OnUnknownMessage(timestamp uint32, msg message.Message) error
-	OnUnknownCommandMessage(timestamp uint32, cmd *message.CommandMessage) error
-	OnUnknownDataMessage(timestamp uint32, data *message.DataMessage) error
+	OnFCPublish(ctx *StreamContext, timestamp uint32, cmd *message.NetStreamFCPublish) error
+	OnFCUnpublish(ctx *StreamContext, timestamp uint32, cmd *message.NetStreamFCUnpublish) error
+	OnSetDataFrame(ctx *StreamContext, timestamp uint32, data *message.NetStreamSetDataFrame) error
+	OnAudio(ctx *StreamContext, timestamp uint32, payload io.Reader) error
+	OnVideo(ctx *StreamContext, timestamp uint32, payload io.Reader) error
+	OnUnknownMessage(ctx *StreamContext, timestamp uint32, msg message.Message) error
+	OnUnknownCommandMessage(ctx *StreamContext, timestamp uint32, cmd *message.CommandMessage) error
+	OnUnknownDataMessage(ctx *StreamContext, timestamp uint32, data *message.DataMessage) error
+	// ENHANCED: Add error callback for better error handling
+	OnError(ctx *StreamContext, err error) error
 	OnClose()
 }
